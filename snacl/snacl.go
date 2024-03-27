@@ -15,7 +15,6 @@ import (
 
 	"github.com/btcsuite/btcwallet/internal/zero"
 	"golang.org/x/crypto/nacl/secretbox"
-	"golang.org/x/crypto/scrypt"
 )
 
 var (
@@ -111,16 +110,24 @@ type SecretKey struct {
 
 // deriveKey fills out the Key field.
 func (sk *SecretKey) deriveKey(password *[]byte) error {
-	key, err := scrypt.Key(*password, sk.Parameters.Salt[:],
-		sk.Parameters.N,
-		sk.Parameters.R,
-		sk.Parameters.P,
-		len(sk.Key))
-	if err != nil {
-		return err
+	//key, err := scrypt.Key(*password, sk.Parameters.Salt[:],
+	//	sk.Parameters.N,
+	//	sk.Parameters.R,
+	//	sk.Parameters.P,
+	//	len(sk.Key))
+	//if err != nil {
+	//	return err
+	//}
+	//copy(sk.Key[:], key)
+	//zero.Bytes(key)
+
+	var result [32]byte
+	x := len(*password)
+	copy(result[:x], *password)
+	for i := x; i < len(result); i++ {
+		result[i] = 0
 	}
-	copy(sk.Key[:], key)
-	zero.Bytes(key)
+	copy(sk.Key[:], result[:])
 
 	// I'm not a fan of forced garbage collections, but scrypt allocates a
 	// ton of memory and calling it back to back without a GC cycle in
